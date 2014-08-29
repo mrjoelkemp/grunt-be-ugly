@@ -1,0 +1,44 @@
+{
+  "name": "grunt-be-ugly",
+  "description": "Parallel uglification",
+  "version": "1.0.0",
+  "homepage": "https://github.com/mrjoelkemp/grunt-be-ugly",
+  "author": {
+    "name": "Joel Kemp",
+    "email": "joel@mrjoelkemp.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mrjoelkemp/grunt-be-ugly.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mrjoelkemp/grunt-be-ugly/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/mrjoelkemp/grunt-be-ugly/blob/master/LICENSE-MIT"
+    }
+  ],
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5"
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.5"
+  },
+  "keywords": [
+    "Grunt",
+    "uglify",
+    "parallel"
+  ],
+  "dependencies": {
+    "async": "^0.9.0",
+    "uglify-js": "^2.4.15"
+  }
+}
