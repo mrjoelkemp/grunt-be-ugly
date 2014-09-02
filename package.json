@@ -2,22 +2,22 @@
   "name": "grunt-be-ugly",
   "description": "Parallel uglification",
   "version": "1.0.0",
-  "homepage": "https://github.com/mrjoelkemp/grunt-be-ugly",
+  "homepage": "https://github.com/behance/grunt-be-ugly",
   "author": {
     "name": "Joel Kemp",
     "email": "joel@mrjoelkemp.com"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/mrjoelkemp/grunt-be-ugly.git"
+    "url": "git://github.com/behance/grunt-be-ugly.git"
   },
   "bugs": {
-    "url": "https://github.com/mrjoelkemp/grunt-be-ugly/issues"
+    "url": "https://github.com/behance/grunt-be-ugly/issues"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/mrjoelkemp/grunt-be-ugly/blob/master/LICENSE-MIT"
+      "url": "https://github.com/behance/grunt-be-ugly/blob/master/LICENSE-MIT"
     }
   ],
   "engines": {
