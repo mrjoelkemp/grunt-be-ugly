@@ -1,70 +1,32 @@
-'use strict';
+var path = require('path'),
+    fork = require('child_process').fork,
+    q = require('q');
 
 module.exports = function(grunt) {
-  'use strict';
-
-  var uglify = require('./lib/uglify').init(grunt);
-  var async = require('async');
-  var path = require('path');
-
-  /**
-   * Serially minifies the given files
-   *
-   * @param  {String[]} files
-   * @param  {Object} options - build config
-   * @param  {String} options.root - the input directory
-   * @param  {String} options.dir - the output directory
-   */
-  function minify(files, options) {
-    files.forEach(function (f) {
-      var inputPath = path.resolve(options.root, f) + '.js';
-      var outputPath = path.resolve(options.dir, f) + '.js';
-      var result;
-
-      try {
-        result = uglify.minify([inputPath], null, options);
-      }
-      catch (e) {
-        console.log(e);
-        var err = new Error('Uglification failed.');
-
-        if (e.message) {
-          err.message += '\n' + e.message + '. \n';
-          if (e.line) {
-            err.message += 'Line ' + e.line + ' in ' + f + '\n';
+  var defaultOptions = {
+        limit: require('os').cpus().length,
+        uglify2: {
+          output: {
+            beautify: false
           }
-        }
-
-        err.origError = e;
-        grunt.log.warn('Uglifying source "' + f + '" failed.');
-        grunt.fail.warn(err);
-      }
-
-      grunt.file.write(outputPath, result.min);
-    });
-  }
+        },
+        // Directory to build to
+        dir: '',
+        banner: '',
+        footer: '',
+        compress: {
+          warnings: false
+        },
+        mangle: {},
+        report: false,
+        warnings: false
+      };
 
   grunt.registerMultiTask('be_ugly', 'Parallel uglification', function () {
-    var options = this.options({
-      limit: require('os').cpus().length,
-      uglify2: {
-        output: {
-          beautify: false
-        }
-      },
-      // Directory to build to
-      dir: '',
-      banner: '',
-      footer: '',
-      compress: {
-        warnings: false
-      },
-      mangle: {},
-      report: false,
-      warnings: false
-    });
-
-    var done = this.async();
+    var options = this.options(defaultOptions),
+        done = this.async(),
+        workers = [],
+        bundles;
 
     if (!this.data.root) {
       grunt.warn('root not supplied');
@@ -74,8 +36,6 @@ module.exports = function(grunt) {
     options.root = this.data.root;
     options.dir = this.data.buildRoot || this.data.root;
     options.beautify = options.uglify2.output.beautify || options.beautify;
-
-    var bundles;
 
     // If we want to uglify a user-specified set of files
     if(this.files && this.files.length) {
@@ -87,8 +47,8 @@ module.exports = function(grunt) {
     }
     // Or we just want to uglify the bundles/modules
     else {
-      var bundles = options.modules.map(function(bundle) {
-        return bundle.name
+      bundles = options.modules.map(function(bundle) {
+        return bundle.name;
       });
     }
 
@@ -105,16 +65,39 @@ module.exports = function(grunt) {
       files[index % options.limit].push(filename);
     }, this);
 
-    var tasks = files.map(function(batch) {
-      return function(callback) {
-        minify(batch, options);
-        callback();
-      };
-    });
+    q.all(files.map(function(batch) {
+      var deferred = q.defer(),
+          workerPath = __dirname + '/lib/worker.js',
+          worker = fork(workerPath);
 
-    async.parallel(tasks, function() {
+      workers.push(worker);
+
+      worker.send({
+        files: batch,
+        options: options
+      });
+
+      worker.on('message', function(error) {
+        if (error) {
+          deferred.reject();
+        }
+        else {
+          deferred.resolve();
+          worker.kill();
+        }
+      });
+
+      return deferred.promise;
+    }))
+    .done(function() {
       console.log('Done uglifying');
       done();
+    },
+    function() {
+      workers.forEach(function(worker) {
+        worker.kill();
+      });
+      done(false);
     });
   });
 };
