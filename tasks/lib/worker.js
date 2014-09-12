@@ -3,7 +3,8 @@
 var path = require('path'),
     fs = require('fs'),
     grunt = require('grunt'),
-    uglify = require('./uglify').init(grunt);
+    uglify = require('./uglify').init(grunt),
+    mkdirp = require('mkdirp');
 
 process.on('message', function(data) {
   var files = data.files,
@@ -15,6 +16,7 @@ process.on('message', function(data) {
     var ext = '.js',
         inputPath = path.resolve(options.root, f) + ext,
         outputPath = path.resolve(options.dir, f) + ext,
+        dirName = path.dirname(outputPath),
         result;
 
     try {
@@ -35,6 +37,8 @@ process.on('message', function(data) {
       process.send('error');
       throw err;
     }
+
+    mkdirp.sync(dirName);
 
     fs.writeFileSync(outputPath, result.min);
     console.log('Uglified ' + f);
