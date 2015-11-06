@@ -23,19 +23,10 @@ process.on('message', function(data) {
       result = uglify.minify([inputPath], null, options);
     }
     catch (e) {
+      // TODO: Replace this with the real error processing when es6 support lands
+      console.log(inputPath);
       console.log(e);
-      var err = new Error('Uglification failed.');
-
-      if (e.message) {
-        err.message += '\n' + e.message + '. \n';
-        if (e.line) {
-          err.message += 'Line ' + e.line + ' in ' + f + '\n';
-        }
-      }
-
-      err.origError = e;
-      process.send('error');
-      throw err;
+      return;
     }
 
     mkdirp.sync(dirName);
